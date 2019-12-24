@@ -2,9 +2,8 @@
 #include <sstream>
 #include <numeric>
 #include <regex>
-
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/string/replace.hpp>
+#include <filesystem>
+#include <fstream>
 
 #include "FileSystem.h"
 #include "StringUtils.h"
@@ -13,64 +12,67 @@ namespace utils
 {
 
 	using namespace std;
-	using namespace boost::filesystem;
 
 	//
 	// FileInfo
 	//
 	FileSystem::FileInfo::FileInfo(string const& filepath)
-		: mFilepath(standardisePath(filepath))
+		: mFilepath(filepath)
 	{
 	}
 
-	string const& FileSystem::FileInfo::getFilePath() const
+	string FileSystem::FileInfo::getFilePath() const
 	{
-		return mFilepath;
+		return standardisePath(mFilepath.string());
 	}
 
 	string FileSystem::FileInfo::getPath() const
 	{
-		return standardisePath(path(mFilepath).relative_path().string());
+		return standardisePath(mFilepath.relative_path().string());
 	}
 
 	string FileSystem::FileInfo::getFileName() const
 	{
-		return path(mFilepath).filename().string();
+		return mFilepath.filename().string();
 	}
 
 	string FileSystem::FileInfo::getFileNameWithoutExtension() const
 	{
-		return path(mFilepath).stem().string();
+		return mFilepath.stem().string();
 	}
 
 	string FileSystem::FileInfo::getExtension() const
 	{
-		return path(mFilepath).extension().string();
+		return mFilepath.extension().string();
 	}
 	
 	//
 	// DirectoryInfo
 	//
 	FileSystem::DirectoryInfo::DirectoryInfo(string const& path)
-		: mPath(standardisePath(path))
+		: mPath(path)
 	{
 	}
 
-	string const& FileSystem::DirectoryInfo::getDirectoryPath() const
+	string FileSystem::DirectoryInfo::getDirectoryPath() const
 	{
-		return mPath;
+		return standardisePath(mPath.string());
 	}
 
 	FileSystem::FileInfo FileSystem::DirectoryInfo::createFile(string const& filename)
 	{
-		string filepath = FileSystem::concatPaths(mPath, filename);
+		filesystem::path filepath = mPath;
+		filepath += filename;
+
 		return FileSystem::createFile(filepath);
 	}
 
 	FileSystem::DirectoryInfo FileSystem::DirectoryInfo::createSubDirectory(string const& subdir)
 	{
-		string dirpath = FileSystem::concatPaths(mPath, FileSystem::standardisePath(subdir));
-		return FileSystem::createDirectory(dirpath);
+		filesystem::path dir = mPath;
+		dir += subdir;
+
+		return FileSystem::createDirectory(dir);
 	}
 
 	//
@@ -104,9 +106,9 @@ namespace utils
 	{
 		string fixedPattern = pattern;
 
-		boost::replace_all(fixedPattern, ".", "\\.");
-		boost::replace_all(fixedPattern, "*", ".*");
-		boost::replace_all(fixedPattern, "?", ".");
+		StringUtils::replaceAll(fixedPattern, ".", "\\.");
+		StringUtils::replaceAll(fixedPattern, "*", ".*");
+		StringUtils::replaceAll(fixedPattern, "?", ".");
 
 		regex re = regex(fixedPattern, regex_constants::icase);
 		return regex_search(input, re);
@@ -114,40 +116,47 @@ namespace utils
 
 	FileSystem::FileInfo FileSystem::createFile(string const& filepath)
 	{
-		boost::filesystem::ofstream fp;
+		ofstream fp;
 			
-		const string standardisedPath = standardisePath(filepath);
-		fp.open(path(standardisedPath), ios_base::trunc);
+		fp.open(filepath.operator std::basic_string_view<char, std::char_traits<char>>(), ios_base::trunc);
 
 		if (!fp.is_open())
 		{
-			throw FileException("Could not create file '" + standardisedPath + "'.");
+			throw FileException("Could not create file '" + filepath + "'.");
 		}
 			
 		fp.close();
-		return FileInfo(standardisePath(standardisedPath));
+		return FileInfo(standardisePath(filepath));
+	}
+
+	FileSystem::FileInfo FileSystem::createFile(filesystem::path const& filepath)
+	{
+		return createFile(filepath.string());
 	}
 
 	FileSystem::DirectoryInfo FileSystem::createDirectory(string const& dirpath)
 	{
-		const string standardisedPath = standardisePath(dirpath);
-		if (!directoryExists(standardisedPath))
+		if (!directoryExists(dirpath))
 		{
-			if (!create_directory(path(standardisedPath)))
+			if (!filesystem::create_directory(filesystem::path(dirpath)))
 			{
-				throw FileException("Could not create directory '" + standardisedPath + "'.");
+				throw FileException("Could not create directory '" + dirpath + "'.");
 			}
 		}
 
-		return DirectoryInfo(standardisedPath);
+		return DirectoryInfo(dirpath);
+	}
+
+	FileSystem::DirectoryInfo FileSystem::createDirectory(filesystem::path const& dirpath)
+	{
+		return createDirectory(dirpath.string());
 	}
 
 	void FileSystem::deleteFile(string const& filepath)
 	{
-		const string standardisedPath = standardisePath(filepath);
-		if (!boost::filesystem::remove(path(standardisedPath)))
+		if (!filesystem::remove(filesystem::path(filepath)))
 		{
-			throw FileException("Could not delete '" + standardisedPath + "'.");
+			throw FileException("Could not delete '" + filepath + "'.");
 		}
 	}
 
@@ -158,10 +167,9 @@ namespace utils
 
 	void FileSystem::deleteDirectory(string const& dirpath)
 	{
-		const string standardisedPath = standardisePath(dirpath);
-		if (!boost::filesystem::remove_all(path(standardisedPath)))
+		if (!filesystem::remove_all(filesystem::path(dirpath)))
 		{
-			throw FileException("Could not delete '" + standardisedPath + "'.");
+			throw FileException("Could not delete '" + dirpath + "'.");
 		}
 	}
 
@@ -172,56 +180,53 @@ namespace utils
 
 	FileSystem::FileInfo FileSystem::getFile(string const& filepath)
 	{
-		const string standardisedPath = standardisePath(filepath);
+		filesystem::path p(filepath);
 
-		path p(standardisedPath);
-
-		if (!exists(p))
+		if (!filesystem::exists(p))
 		{
-			throw FileException("File '" + standardisedPath + "' not found.");
+			throw FileException("File '" + filepath + "' not found.");
 		}
 		else
 		{
-			if (!is_regular_file(p))
+			if (!filesystem::is_regular_file(p))
 			{
-				throw FileException("'" + standardisedPath + "' is not a file.");
+				throw FileException("'" + filepath + "' is not a file.");
 			}
 
-			return FileInfo(standardisedPath);
+			return FileInfo(filepath);
 		}
 	}
 
 	FileSystem::DirectoryInfo FileSystem::getDirectory(string const& dirpath)
 	{
-		const string standardisedPath = standardisePath(dirpath);
-		path p(standardisedPath);
+		filesystem::path p(dirpath);
 
-		if (!exists(p))
+		if (!filesystem::exists(p))
 		{
-			throw FileException("Directory '" + standardisedPath + "' not found.");
+			throw FileException("Directory '" + dirpath + "' not found.");
 		}
 		else
 		{
-			if (!is_directory(p))
+			if (!filesystem::is_directory(p))
 			{
-				throw FileException("'" + standardisedPath + "' is not a directory.");
+				throw FileException("'" + dirpath + "' is not a directory.");
 			}
 
-			return DirectoryInfo(standardisedPath);
+			return DirectoryInfo(dirpath);
 		}
 	}
 
 	FileSystem::DirectoryInfo FileSystem::getCurrentDirectory()
 	{
-		return DirectoryInfo(standardisePath(current_path().string()));
+		return DirectoryInfo(filesystem::current_path().string());
 	}
 
 	vector<FileSystem::FileInfo> FileSystem::getFilesInDirectory(string const& dir, string const& pattern, bool subdirs)
 	{
 		vector<FileInfo> files;
 
-		path dirPath(dir);
-		if (!is_directory(dirPath))
+		filesystem::path dirPath(dir);
+		if (!filesystem::is_directory(dirPath))
 		{
 			throw FileException("Path '" + dir + "' is not a directory.");
 		}
@@ -231,12 +236,12 @@ namespace utils
 
 		if (subdirs)
 		{
-			recursive_directory_iterator it(dirPath), end;
+			filesystem::recursive_directory_iterator it(dirPath), end;
 			while (it != end)
 			{
-				path entryPath = it->path();
+				auto entryPath = it->path();
 
-				if (is_regular_file(entryPath))
+				if (filesystem::is_regular_file(entryPath))
 				{
 					// Ignore anything that doesn't match pattern
 					string filename = entryPath.filename().string();
@@ -256,12 +261,12 @@ namespace utils
 		}
 		else
 		{
-			directory_iterator it(dirPath), end;
+			filesystem::directory_iterator it(dirPath), end;
 			while (it != end)
 			{
-				path entryPath = it->path();
+				auto entryPath = it->path();
 
-				if (is_regular_file(entryPath))
+				if (filesystem::is_regular_file(entryPath))
 				{
 					// Ignore anything that doesn't match pattern
 					string filename = entryPath.filename().string();
@@ -285,7 +290,7 @@ namespace utils
 
 	bool FileSystem::fileExists(string const& filepath)
 	{
-		return exists(path(filepath));
+		return filesystem::exists(filesystem::path(filepath));
 	}
 
 	bool FileSystem::fileExists(FileInfo const& fi)
@@ -295,7 +300,7 @@ namespace utils
 
 	bool FileSystem::directoryExists(string const& dirpath)
 	{
-		return exists(path(dirpath));
+		return filesystem::exists(filesystem::path(dirpath));
 	}
 
 	bool FileSystem::directoryExists(DirectoryInfo const& di)
@@ -303,17 +308,5 @@ namespace utils
 		return directoryExists(di.getDirectoryPath());
 	}
 
-	string FileSystem::concatPaths(string const& path1, string const& path2)
-	{
-		return standardisePath((path(path1) / path(path2)).string());
-	}
-
-	string FileSystem::concatPaths(vector<string> const& paths)
-	{
-		return standardisePath(accumulate(paths.begin(), paths.end(), string{}, [] (string const& a, string const& b)
-		{
-			return (a.empty() ? path(a) : path(a) / path(b)).string();
-		}));
-	}
 
 } // utils

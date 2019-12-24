@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <filesystem>
 
 #include "Platform.h"
 
@@ -31,13 +32,13 @@ namespace utils
 		//
 		class FileInfo
 		{
-			std::string mFilepath;
+			std::filesystem::path mFilepath;
 
 		public:
 
 			explicit FileInfo(std::string const& filepath);
 
-			std::string const& getFilePath() const;
+			std::string getFilePath() const;
 
 			std::string getPath() const;
 
@@ -53,13 +54,13 @@ namespace utils
 		//
 		class DirectoryInfo
 		{
-			std::string mPath;
+			std::filesystem::path mPath;
 
 		public:
 
 			explicit DirectoryInfo(std::string const& path);
 
-			std::string const& getDirectoryPath() const;
+			std::string getDirectoryPath() const;
 
 			FileInfo createFile(std::string const& filename);
 
@@ -76,7 +77,11 @@ namespace utils
 
 		static FileInfo createFile(std::string const& filepath);
 
+		static FileInfo createFile(std::filesystem::path const& filepath);
+
 		static DirectoryInfo createDirectory(std::string const& dirpath);
+
+		static DirectoryInfo createDirectory(std::filesystem::path const& dirpath);
 
 		static void deleteFile(std::string const& filepath);
 
@@ -104,9 +109,6 @@ namespace utils
 
 		static bool directoryExists(DirectoryInfo const& di);
 
-		static std::string concatPaths(std::string const& path1, std::string const& path2);
-
-		static std::string concatPaths(std::vector<std::string> const& paths);
 	};
 
 } // utils
