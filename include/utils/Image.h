@@ -24,7 +24,7 @@ namespace utils
 
 		~Image();
 
-		void loadFromFile(std::string const& filepath, bool flipVertically);
+		void loadFromFile(std::string const& filepath, bool flipVertically = false);
 
 		void loadFromData(size_t width, size_t height, uint32_t bitsPerPixel, uint8_t const* data);
 
