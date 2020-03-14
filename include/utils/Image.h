@@ -20,7 +20,7 @@ namespace utils
 
 	public:
 
-		Image();
+		Image() = default;
 
 		~Image();
 

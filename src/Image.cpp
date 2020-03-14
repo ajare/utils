@@ -18,11 +18,6 @@ namespace utils
 		errMsg += message;
 	}
 
-	Image::Image()
-	{
-
-	}
-
 	Image::~Image()
 	{
 		delete[] mData;
