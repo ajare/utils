@@ -102,6 +102,11 @@ namespace utils
 		return ret;
 	}
 
+	string FileSystem::concatPaths(string const& path1, string const& path2)
+	{
+		return standardisePath(path1) + "/" + standardisePath(path2);
+	}
+
 	bool FileSystem::matchesFilePattern(string const& input, string const& pattern)
 	{
 		string fixedPattern = pattern;

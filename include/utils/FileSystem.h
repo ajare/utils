@@ -75,6 +75,8 @@ namespace utils
 
 		static std::string standardisePath(std::string const& path);
 
+		static std::string concatPaths(std::string const& path1, std::string const& path2);
+
 		static FileInfo createFile(std::string const& filepath);
 
 		static FileInfo createFile(std::filesystem::path const& filepath);
