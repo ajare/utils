@@ -107,6 +107,36 @@ namespace utils
 		return standardisePath(path1) + "/" + standardisePath(path2);
 	}
 
+	string FileSystem::baseDirectory(string const& path)
+	{
+		auto standardised = standardisePath(path);
+		auto slashPos = standardised.find_last_of('/');
+
+		if (slashPos == string::npos)
+		{
+			return "";
+		}
+		else
+		{
+			return standardised.substr(0, slashPos);
+		}
+	}
+
+	string FileSystem::baseName(string const& path)
+	{
+		auto standardised = standardisePath(path);
+		auto slashPos = standardised.find_last_of('/');
+
+		if (slashPos == string::npos)
+		{
+			return standardised;
+		}
+		else
+		{
+			return standardised.substr(slashPos + 1);
+		}
+	}
+
 	bool FileSystem::matchesFilePattern(string const& input, string const& pattern)
 	{
 		string fixedPattern = pattern;

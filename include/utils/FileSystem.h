@@ -77,6 +77,10 @@ namespace utils
 
 		static std::string concatPaths(std::string const& path1, std::string const& path2);
 
+		static std::string baseDirectory(std::string const& path);
+
+		static std::string baseName(std::string const& path);
+
 		static FileInfo createFile(std::string const& filepath);
 
 		static FileInfo createFile(std::filesystem::path const& filepath);
