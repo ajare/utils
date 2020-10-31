@@ -189,9 +189,12 @@ namespace utils
 
 	void FileSystem::deleteFile(string const& filepath)
 	{
-		if (!filesystem::remove(filesystem::path(filepath)))
+		if (fileExists(filePath))
 		{
-			throw FileException("Could not delete '" + filepath + "'.");
+			if (!filesystem::remove(filesystem::path(filepath)))
+			{
+				throw FileException("Could not delete '" + filepath + "'.");
+			}
 		}
 	}
 
