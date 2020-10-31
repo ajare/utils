@@ -189,7 +189,7 @@ namespace utils
 
 	void FileSystem::deleteFile(string const& filepath)
 	{
-		if (fileExists(filePath))
+		if (fileExists(filepath))
 		{
 			if (!filesystem::remove(filesystem::path(filepath)))
 			{
