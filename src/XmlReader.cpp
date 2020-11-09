@@ -347,4 +347,37 @@ namespace utils
 		return node;
 	}
 
+	StructuredData XmlReader::_readTree(void* node)
+	{
+		auto xmlNode = static_cast<tinyxml2::XMLElement*>(node);
+		
+		StructuredData sd(xmlNode->Name());
+
+		auto child = xmlNode->FirstChildElement();
+
+		if (!child)
+		{
+			auto text = xmlNode->GetText();
+			sd.setValue(text ? text : "");
+			return sd;
+		}
+		else
+		{
+			do
+			{
+				auto csd = _readTree(child);
+				sd.addEntry(csd.getName(), csd);
+
+				child = child->NextSiblingElement();
+			} while (child);
+		}
+
+		return sd;
+	}
+
+	StructuredData XmlReader::readTree()
+	{
+		return _readTree(mRootNode);
+	}
+
 } // utils

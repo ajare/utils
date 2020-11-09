@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<Material>
+	<Name>test_material</Name>
+	<Program>
+		<PositionType>3D</PositionType>
+		<Shaders>
+			<Shader>
+				<type>Vertex</type>
+				<source />
+			</Shader>
+			<Shader>
+				<type>Fragment</type>
+				<source>test.frag</source>
+			</Shader>
+		</Shaders>
+	</Program>
+	<Textures>
+		<Texture>
+			<binding>TEX1</binding>
+			<filename>rabbit.jpg</filename>
+		</Texture>
+		<Texture>
+			<binding>TEX2</binding>
+			<resource>WhiteTexture</resource>
+		</Texture>
+	</Textures>
+	<Uniforms>
+		<Uniform>
+			<name>SPEC_EXPONENT</name>
+			<type>float</type>
+			<value>16</value>
+		</Uniform>
+		<Uniform>
+			<name>SPEC_STRENGTH</name>
+			<type>float</type>
+			<value>0.5</value>
+		</Uniform>
+	</Uniforms>
+</Material>

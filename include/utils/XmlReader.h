@@ -5,6 +5,7 @@
 
 #include "StringUtils.h"
 #include "Platform.h"
+#include "StructuredData.h"
 
 namespace utils
 {
@@ -50,6 +51,7 @@ namespace utils
 		std::string getAsText() const;
 	};
 
+
 	class XmlReader
 	{
 		void* mDocument;
@@ -68,6 +70,8 @@ namespace utils
 
 		static std::string getErrorMessage(int errorCode, bool loadNotParse, std::string const& filepath);
 
+		StructuredData _readTree(void* node);
+
 	public:
 
 		~XmlReader();
@@ -77,6 +81,8 @@ namespace utils
 		static XmlReader* fromString(std::string const& string);
 
 		XmlNode* getNode(std::string const& path);
+
+		StructuredData readTree();
 	};
 
 } // utils

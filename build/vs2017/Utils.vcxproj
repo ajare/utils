@@ -108,6 +108,7 @@
     <ClCompile Include="..\..\src\Image.cpp" />
     <ClCompile Include="..\..\src\MemTracker.cpp" />
     <ClCompile Include="..\..\src\StringUtils.cpp" />
+    <ClCompile Include="..\..\src\StructuredData.cpp" />
     <ClCompile Include="..\..\src\tinyxml2.cpp" />
     <ClCompile Include="..\..\src\XmlReader.cpp" />
     <ClCompile Include="..\..\src\XmlWriter.cpp" />
@@ -118,6 +119,7 @@
     <ClInclude Include="..\..\include\utils\MemTracker.h" />
     <ClInclude Include="..\..\include\utils\Platform.h" />
     <ClInclude Include="..\..\include\utils\StringUtils.h" />
+    <ClInclude Include="..\..\include\utils\StructuredData.h" />
     <ClInclude Include="..\..\include\utils\tinyxml2.h" />
     <ClInclude Include="..\..\include\utils\XmlReader.h" />
     <ClInclude Include="..\..\include\utils\XmlWriter.h" />
