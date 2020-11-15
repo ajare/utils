@@ -45,6 +45,11 @@ namespace utils
 	{
 		return mFilepath.extension().string();
 	}
+
+	bool FileSystem::FileInfo::isPathRelative() const
+	{
+		return mFilepath.is_relative();
+	}
 	
 	//
 	// DirectoryInfo

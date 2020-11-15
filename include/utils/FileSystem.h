@@ -47,6 +47,8 @@ namespace utils
 			std::string getFileNameWithoutExtension() const;
 
 			std::string getExtension() const;
+
+			bool isPathRelative() const;
 		};
 
 		//
