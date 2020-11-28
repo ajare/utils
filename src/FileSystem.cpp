@@ -351,5 +351,23 @@ namespace utils
 		return directoryExists(di.getDirectoryPath());
 	}
 
+	string FileSystem::readTextFile(std::string const& filepath)
+	{
+		ifstream fstr(filepath);
+
+		if (!fstr.is_open())
+		{
+			throw FileException("Could not open file '" + filepath + "'.");
+		}
+
+		string str;
+
+		fstr.seekg(0, ios::end);
+		str.reserve((size_t)fstr.tellg());
+		fstr.seekg(0, ios::beg);
+
+		str.assign((istreambuf_iterator<char>(fstr)), istreambuf_iterator<char>());
+		return str;
+	}
 
 } // utils

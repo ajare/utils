@@ -117,6 +117,8 @@ namespace utils
 
 		static bool directoryExists(DirectoryInfo const& di);
 
+		static std::string readTextFile(std::string const& filepath);
+
 	};
 
 } // utils

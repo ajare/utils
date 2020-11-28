@@ -8,6 +8,7 @@
 #include <string>
 #include <cstdarg>
 #include <cstring>
+#include <fstream>
 
 #include "StringUtils.h"
 
