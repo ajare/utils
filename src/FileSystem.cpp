@@ -109,7 +109,14 @@ namespace utils
 
 	string FileSystem::concatPaths(string const& path1, string const& path2)
 	{
-		return standardisePath(path1) + "/" + standardisePath(path2);
+		if (path1 != "")
+		{
+			return standardisePath(path1) + "/" + standardisePath(path2);
+		}
+		else
+		{
+			return standardisePath(path2);
+		}
 	}
 
 	string FileSystem::baseDirectory(string const& path)
