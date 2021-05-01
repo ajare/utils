@@ -159,7 +159,8 @@ namespace utils
 		while (pos != std::string::npos)
 		{
 			str.replace(pos, toFind.size(), replacement);
-			pos = str.find(toFind, pos + toFind.size());
+			int offset = (int)replacement.size() - (int)toFind.size();
+			pos = str.find(toFind, pos + offset);
 		}
 	}
 

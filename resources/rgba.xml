@@ -1,0 +1,12 @@
+<Texture>
+	<Filename>rgba.png</Filename>
+	<Target>TEXTURE_2D</Target>
+	<Filter>LINEAR</Filter>
+	
+	<QualitySettings>
+		<Quality>
+			<Level>1</Level>
+			<Filter>NEAREST</Filter>
+		</Quality>
+	</QualitySettings>
+</Texture>

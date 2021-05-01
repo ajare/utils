@@ -149,16 +149,46 @@ namespace utils
 		}
 	}
 
-	bool FileSystem::matchesFilePattern(string const& input, string const& pattern)
+	bool FileSystem::matchesFilePattern(char const* input, char const* pattern)
 	{
-		string fixedPattern = pattern;
+		int star;
+		new_segment:
 
-		StringUtils::replaceAll(fixedPattern, ".", "\\.");
-		StringUtils::replaceAll(fixedPattern, "*", ".*");
-		StringUtils::replaceAll(fixedPattern, "?", ".");
+			star = 0;
+			if (*pattern == '*') 
+			{
+				star = 1;
+				do 
+				{ 
+					pattern++; 
+				} while (*pattern == '*');
+			}
 
-		regex re = regex(fixedPattern, regex_constants::icase);
-		return regex_search(input, re);
+		test_match:
+
+			int i;
+			for (i = 0; pattern[i] && (pattern[i] != '*'); i++) 
+			{
+				if (toupper(input[i]) != toupper(pattern[i])) 
+				{
+					if (!input[i]) return 0;
+					if ((pattern[i] == '?') && (input[i] != '.')) continue;
+					if (!star) return 0;
+					input++;
+					goto test_match;
+				}
+			}
+			if (pattern[i] == '*') 
+			{
+				input += i;
+				pattern += i;
+				goto new_segment;
+			}
+			if (!input[i]) return 1;
+			if (i && pattern[i - 1] == '*') return 1;
+			if (!star) return 0;
+			input++;
+			goto test_match;
 	}
 
 	FileSystem::FileInfo FileSystem::createFile(string const& filepath)
@@ -298,7 +328,7 @@ namespace utils
 
 					for (auto const& p: patterns)
 					{
-						if (matchesFilePattern(filename, p))
+						if (matchesFilePattern(filename.c_str(), p.c_str()))
 						{
 							files.push_back(FileInfo(standardisePath(entryPath.string())));
 						}
@@ -320,7 +350,7 @@ namespace utils
 				{
 					// Ignore anything that doesn't match pattern
 					string filename = entryPath.filename().string();
-					if (matchesFilePattern(filename, pattern))
+					if (matchesFilePattern(filename.c_str(), pattern.c_str()))
 					{
 						files.push_back(FileInfo(standardisePath(entryPath.string())));
 					}
