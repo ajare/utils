@@ -1,6 +1,7 @@
 #include "XmlReader.h"
 #include "FileSystem.h"
 #include "StringUtils.h"
+#include "XmlExceptions.h"
 #include "tinyxml2.h"
 
 namespace utils
@@ -54,10 +55,7 @@ namespace utils
 		auto childNode = static_cast<tinyxml2::XMLNode*>(mNode)->FirstChildElement(child.c_str());
 		if (!childNode)
 		{
-			string errMsg = mFilepath == "" ? "" : mFilepath + ": ";
-			errMsg += "invalid path: " + xpath;
-
-			throw exception(errMsg.c_str());
+			throw XmlPathException(xpath, mFilepath);
 		}
 
 		auto node = new XmlNode(childNode, xpath, child, mFilepath);
@@ -91,10 +89,8 @@ namespace utils
 		}
 		else
 		{
-			string errMsg = mFilepath == "" ? "" : mFilepath + ": ";
-			errMsg += "could not find required attribute '" + attrib + "' at " + mXpath;
-
-			throw exception(errMsg.c_str());
+			string errMsg = "could not find required attribute '" + attrib + "' at " + mXpath;
+			throw XmlException(errMsg, mFilepath);
 		}
 	}
 
@@ -146,7 +142,7 @@ namespace utils
 		if (err != tinyxml2::XMLError::XML_SUCCESS)
 		{
 			string errMsg = getErrorMessage(err, true, filepath);
-			throw exception(errMsg.c_str());
+			throw XmlException(errMsg, filepath);
 		}
 
 
@@ -161,7 +157,7 @@ namespace utils
 		if (err != tinyxml2::XMLError::XML_SUCCESS)
 		{
 			string errMsg = getErrorMessage(err, false, "");
-			throw exception(errMsg.c_str());
+			throw XmlException(errMsg, "");
 		}
 
 		return new XmlReader(doc, "");
@@ -319,10 +315,7 @@ namespace utils
 		// Check name
 		if (nodes.front() != mRootNodeName)
 		{
-			string errMsg = mFilepath == "" ? "" : mFilepath + ": ";
-			errMsg += "invalid path: " + xpath;
-
-			throw exception(xpath.c_str());
+			throw XmlPathException(xpath, mFilepath);
 		}
 
 		auto it = nodes.begin(); ++it;
@@ -332,10 +325,39 @@ namespace utils
 			cur = static_cast<tinyxml2::XMLNode*>(cur->FirstChildElement(node.c_str()));
 			if (!cur)
 			{
-				string errMsg = mFilepath == "" ? "" : mFilepath + ": ";
-				errMsg += "invalid path: " + xpath;
+				throw XmlPathException(xpath, mFilepath);
+			}
 
-				throw exception(xpath.c_str());
+			++it;
+		}
+
+		auto node = new XmlNode(cur, path, nodes.back(), mFilepath);
+		mNodes.push_back(node);
+
+		return node;
+	}
+
+	XmlNode* XmlReader::getOptionalNode(string const& path)
+	{
+		string xpath = FileSystem::standardisePath(path);
+		vector<string> nodes = StringUtils::split(xpath, "/");
+
+		tinyxml2::XMLNode* cur = static_cast<tinyxml2::XMLNode*>(mRootNode);
+
+		// Check name
+		if (nodes.front() != mRootNodeName)
+		{
+			throw XmlPathException(xpath, mFilepath);
+		}
+
+		auto it = nodes.begin(); ++it;
+		while (it != nodes.end())
+		{
+			auto node = *it;
+			cur = static_cast<tinyxml2::XMLNode*>(cur->FirstChildElement(node.c_str()));
+			if (!cur)
+			{
+				return nullptr;
 			}
 
 			++it;

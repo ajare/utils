@@ -121,6 +121,7 @@
     <ClInclude Include="..\..\include\utils\StringUtils.h" />
     <ClInclude Include="..\..\include\utils\StructuredData.h" />
     <ClInclude Include="..\..\include\utils\tinyxml2.h" />
+    <ClInclude Include="..\..\include\utils\XmlExceptions.h" />
     <ClInclude Include="..\..\include\utils\XmlReader.h" />
     <ClInclude Include="..\..\include\utils\XmlWriter.h" />
   </ItemGroup>

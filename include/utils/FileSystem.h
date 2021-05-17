@@ -67,6 +67,8 @@ namespace utils
 			FileInfo createFile(std::string const& filename);
 
 			DirectoryInfo createSubDirectory(std::string const& subdir);
+
+			bool isPathRelative() const;
 		};
 
 	public:
@@ -116,7 +118,6 @@ namespace utils
 		static bool directoryExists(std::string const& dirpath);
 
 		static bool directoryExists(DirectoryInfo const& di);
-
 	};
 
 } // utils

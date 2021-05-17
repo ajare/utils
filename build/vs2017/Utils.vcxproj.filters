@@ -68,5 +68,8 @@
     <ClInclude Include="..\..\include\utils\StructuredData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\utils\XmlExceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

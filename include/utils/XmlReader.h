@@ -82,6 +82,8 @@ namespace utils
 
 		XmlNode* getNode(std::string const& path);
 
+		XmlNode* getOptionalNode(std::string const& path);
+
 		StructuredData readTree();
 	};
 

@@ -80,6 +80,11 @@ namespace utils
 		return FileSystem::createDirectory(dir);
 	}
 
+	bool FileSystem::DirectoryInfo::isPathRelative() const
+	{
+		return mPath.is_relative();
+	}
+
 	//
 	// FileSystem
 	//
