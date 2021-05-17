@@ -73,7 +73,7 @@ namespace utils
 
 	public:
 
-		static bool matchesFilePattern(std::string const& input, std::string const& pattern);
+		static bool matchesFilePattern(char const* input, char const* pattern);
 
 		static void standardisePath(std::string& path);
 
@@ -118,6 +118,8 @@ namespace utils
 		static bool directoryExists(std::string const& dirpath);
 
 		static bool directoryExists(DirectoryInfo const& di);
+
+		static std::string readTextFile(std::string const& filepath);
 	};
 
 } // utils
