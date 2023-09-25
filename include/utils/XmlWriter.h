@@ -3,13 +3,13 @@
 #include <string>
 #include <vector>
 
-#include "StringUtils.h"
 #include "Platform.h"
+#include "StringUtils.h"
 
 namespace utils
 {
 
-	class XmlWriteNode
+	class UTILS_API XmlWriteNode
 	{
 		friend class XmlWriter;
 

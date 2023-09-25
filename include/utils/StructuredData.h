@@ -3,9 +3,11 @@
 #include <string>
 #include <vector>
 
+#include "Platform.h"
+
 namespace utils
 {
-	class StructuredData
+	class UTILS_API StructuredData
 	{
 	public:
 
