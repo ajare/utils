@@ -30,7 +30,7 @@ namespace utils
 		//
 		// Class for holding info about a file
 		//
-		class FileInfo
+		class UTILS_API FileInfo
 		{
 			std::filesystem::path mFilepath;
 
@@ -54,7 +54,7 @@ namespace utils
 		//
 		// Class for holding info about a directory
 		//
-		class DirectoryInfo
+		class UTILS_API DirectoryInfo
 		{
 			std::filesystem::path mPath;
 
