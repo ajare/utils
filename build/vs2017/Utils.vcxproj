@@ -110,7 +110,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\FileSystem.cpp" />
     <ClCompile Include="..\..\src\Image.cpp" />
-    <ClCompile Include="..\..\src\MemTracker.cpp" />
     <ClCompile Include="..\..\src\StringUtils.cpp" />
     <ClCompile Include="..\..\src\StructuredData.cpp" />
     <ClCompile Include="..\..\src\tinyxml2.cpp" />
@@ -120,7 +119,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\utils\FileSystem.h" />
     <ClInclude Include="..\..\include\utils\Image.h" />
-    <ClInclude Include="..\..\include\utils\MemTracker.h" />
     <ClInclude Include="..\..\include\utils\Platform.h" />
     <ClInclude Include="..\..\include\utils\StringUtils.h" />
     <ClInclude Include="..\..\include\utils\StructuredData.h" />
