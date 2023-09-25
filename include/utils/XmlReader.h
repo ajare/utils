@@ -3,14 +3,15 @@
 #include <string>
 #include <vector>
 
-#include "StringUtils.h"
 #include "Platform.h"
+
+#include "StringUtils.h"
 #include "StructuredData.h"
 
 namespace utils
 {
 
-	class XmlNode
+	class UTILS_API XmlNode
 	{
 		friend class XmlReader;
 
@@ -52,7 +53,7 @@ namespace utils
 	};
 
 
-	class XmlReader
+	class UTILS_API XmlReader
 	{
 		void* mDocument;
 
