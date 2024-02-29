@@ -1,0 +1,1 @@
+devenv build\vs2017\Utils.sln /Rebuild
