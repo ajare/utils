@@ -47,13 +47,6 @@ namespace utils
 		// Replace
 		static void replaceAll(std::string& str, std::string const& toFind, std::string const& replacement);
 
-		// Format
-		template<typename... Args>
-		static std::string format(char const* str, Args... args)
-		{
-			return fmt::format(str, args...);
-		}
-
 		// Join
 		template<typename T>
 		static std::string join(T begin, T end, std::string const& j)
