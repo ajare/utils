@@ -1,7 +1,7 @@
 #pragma once
 
 // Platform settings - based off OGRE3D (www.ogre3d.org)
-#define WP_PLATFORM_WIN32 1
+#define WP_PLATFORM_WINDOWS 1
 #define WP_PLATFORM_LINUX 2
 #define WP_PLATFORM_APPLE 3
 
@@ -26,8 +26,8 @@
 #endif
 
 // Set platform
-#if defined( __WIN32__ ) || defined( _WIN32 )
-#   define WP_PLATFORM WP_PLATFORM_WIN32
+#if defined( __WIN32__ ) || defined( _WIN32 ) || defined( _WIN64 )
+#   define WP_PLATFORM WP_PLATFORM_WINDOWS
 #elif defined( __APPLE_CC__)
 #   define WP_PLATFORM WP_PLATFORM_APPLE
 #else
@@ -35,7 +35,7 @@
 #endif
 
 // DLL Export
-#if WP_PLATFORM == WP_PLATFORM_WIN32
+#if WP_PLATFORM == WP_PLATFORM_WINDOWS
 #	if defined(UTILS_DLL_EXPORT)
 #		define UTILS_API __declspec( dllexport )
 #	else
@@ -50,6 +50,6 @@
 #endif
 
 // Ok, because only occurs on non-public STL members
-#if WP_PLATFORM == WP_PLATFORM_WIN32
+#if WP_PLATFORM == WP_PLATFORM_WINDOWS
 #	pragma warning(disable: 4251)
 #endif
