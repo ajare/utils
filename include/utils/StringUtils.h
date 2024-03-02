@@ -81,15 +81,6 @@ namespace utils
 		//
 		// Conversions
 		//
-			
-		static std::string toString(float value, unsigned short precision = 6, unsigned short width = 0, char fill = ' ',	std::ios::fmtflags flags = std::ios::fmtflags(0));
-
-		static std::string toString(int value, unsigned short width = 0, char fill = ' ',	std::ios::fmtflags flags = std::ios::fmtflags(0));
-
-		static std::string toString(unsigned int value, unsigned short width = 0, char fill = ' ', std::ios::fmtflags flags = std::ios::fmtflags(0));
-
-		static std::string toString(bool value, bool yesNo = false);
-
 		static float parseFloat(std::string const& value);
 
 		static int parseInt(std::string const& value);

@@ -46,14 +46,14 @@ namespace utils
 			int y0, y1, inc;
 			if (flipVertically)
 			{
-				y0 = mHeight - 1;
+				y0 = (int)mHeight - 1;
 				y1 = -1;
 				inc = -1;
 			}
 			else
 			{
 				y0 = 0;
-				y1 = mHeight;
+				y1 = (int)mHeight;
 				inc = 1;
 			}
 
@@ -96,9 +96,9 @@ namespace utils
 		auto channels = mBitsPerPixel / 8;
 		auto bitmap = FreeImage_ConvertFromRawBits(
 			mData,
-			mWidth,
-			mHeight,
-			channels * mWidth,
+			(int)mWidth,
+			(int)mHeight,
+			(int)(channels * mWidth),
 			mBitsPerPixel,
 			0xFF0000,
 			0x00FF00,

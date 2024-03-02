@@ -164,69 +164,6 @@ namespace utils
 		}
 	}
 
-	string StringUtils::toString(float value, unsigned short precision, unsigned short width, char fill, ios::fmtflags flags)
-	{
-		ostringstream stream;
-
-		stream.precision(precision);
-		stream.width(width);
-		stream.fill(fill);
-
-		if (flags)
-		{
-			stream.setf(flags);
-		}
-
-		stream << value;
-		return stream.str();
-
-	}
-
-	string StringUtils::toString(int value, unsigned short width, char fill, ios::fmtflags flags)
-	{
-		ostringstream stream;
-
-		stream.width(width);
-		stream.fill(fill);
-
-		if (flags)
-		{
-			stream.setf(flags);
-		}
-
-		stream << value;
-		return stream.str();
-	}
-
-	string StringUtils::toString(unsigned int value, unsigned short width, char fill, ios::fmtflags flags)
-	{
-		ostringstream stream;
-
-		stream.width(width);
-		stream.fill(fill);
-
-		if (flags)
-		{
-			stream.setf(flags);
-		}
-
-		stream << value;
-		return stream.str();
-	}
-
-	string StringUtils::toString(bool value, bool yesNo)
-	{
-		if (value)
-		{
-			return yesNo ? "yes" : "true";
-		}
-		else
-		{
-			return yesNo ? "no" : "false";
-		}
-
-	}
-
 	float StringUtils::parseFloat(string const& value)
 	{
 		istringstream str(value);

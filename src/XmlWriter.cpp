@@ -1,3 +1,5 @@
+#include <fmt/format.h>
+
 #include "XmlWriter.h"
 #include "StringUtils.h"
 #include "tinyxml2.h"
@@ -47,22 +49,22 @@ namespace utils
 
 	void XmlWriteNode::setValue(int value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::setValue(unsigned int value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::setValue(float value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::setValue(bool value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetText(fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::addAttribute(string const& name, string const& value)
@@ -77,22 +79,22 @@ namespace utils
 
 	void XmlWriteNode::addAttribute(string const& name, int value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::addAttribute(string const& name, unsigned int value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::addAttribute(string const& name, float value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), fmt::format("{}", value).c_str());
 	}
 
 	void XmlWriteNode::addAttribute(string const& name, bool value)
 	{
-		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), StringUtils::toString(value).c_str());
+		static_cast<tinyxml2::XMLElement*>(mNode)->SetAttribute(name.c_str(), fmt::format("{}", value).c_str());
 	}
 
 	XmlWriter::XmlWriter(string const& rootName)
