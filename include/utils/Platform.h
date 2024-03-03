@@ -53,3 +53,11 @@
 #if WP_PLATFORM == WP_PLATFORM_WINDOWS
 #	pragma warning(disable: 4251)
 #endif
+
+#if _MSC_VER >= 1930
+#  include <format>
+#  define STR_FORMAT std::format
+#else
+#  include <fmt/format.h>
+#  define STR_FORMAT fmt::format
+#endif
