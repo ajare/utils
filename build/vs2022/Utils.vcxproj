@@ -118,7 +118,7 @@
     <Link>
       <ImportLibrary>$(ProjectDir)lib\$(Platform)\$(Configuration)\\$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2017\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;fmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2017\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
@@ -138,7 +138,7 @@
     <Link>
       <ImportLibrary>$(ProjectDir)lib\$(Platform)\$(Configuration)\\$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2022\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;fmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2017\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
@@ -162,7 +162,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(ProjectDir)lib\$(Platform)\$(Configuration)\\$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2017\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2017\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
@@ -186,7 +186,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>$(ProjectDir)lib\$(Platform)\$(Configuration)\\$(TargetName).lib</ImportLibrary>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2022\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FreeImage.lib;fmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FreeImage.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\vendor\lib\vs2017\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>

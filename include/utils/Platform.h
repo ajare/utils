@@ -26,7 +26,7 @@
 #endif
 
 // Set platform
-#if defined( __WIN32__ ) || defined( _WIN32 ) || defined( _WIN64 )
+#if defined( _WIN32 )
 #   define WP_PLATFORM WP_PLATFORM_WINDOWS
 #elif defined( __APPLE_CC__)
 #   define WP_PLATFORM WP_PLATFORM_APPLE
