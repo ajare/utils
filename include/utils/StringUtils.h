@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-#include <fmt/format.h>
-
 #include "Platform.h"
 
 namespace utils
