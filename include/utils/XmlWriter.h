@@ -54,7 +54,7 @@ namespace utils
 		void addAttribute(std::string const& name, bool value);
 	};
 
-	class XmlWriter
+	class UTILS_API XmlWriter
 	{
 		void* mDocument;
 
