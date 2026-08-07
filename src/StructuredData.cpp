@@ -66,12 +66,25 @@ namespace utils
 		return (*it).second;
 	}
 
+	StructuredData& StructuredData::getEntry(string const& key)
+	{
+		auto it=find_if(mEntries.begin(),mEntries.end(),[&](auto const& entry){return entry.first==key;});if(it==mEntries.end())throw exception(("Could not find entry '"+key+"'.").c_str());return it->second;
+	}
+
+	void StructuredData::setEntryValue(string const& key,string const& value)
+	{
+		auto it=find_if(mEntries.begin(),mEntries.end(),[&](auto const& entry){return entry.first==key;});if(it==mEntries.end())addEntry(key,value);else it->second.setValue(value);
+	}
+
 	bool StructuredData::hasEntry(string const& key) const
 	{
 		auto it = find_if(mEntries.begin(), mEntries.end(), [key](auto const& entry) { return entry.first == key; });
 
 		return it != mEntries.end();
 	}
+
+	vector<StructuredData::Entry>::iterator StructuredData::begin(){return mEntries.begin();}
+	vector<StructuredData::Entry>::iterator StructuredData::end(){return mEntries.end();}
 
 	vector<StructuredData::Entry>::const_iterator StructuredData::begin() const
 	{

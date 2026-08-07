@@ -42,11 +42,14 @@ namespace utils
 		void addEntry(std::string const& key, StructuredData const& value);
 
 		StructuredData const& getEntry(std::string const& key) const;
+		StructuredData& getEntry(std::string const& key);
+		void setEntryValue(std::string const& key, std::string const& value);
 
 		bool hasEntry(std::string const& key) const;
 
+		std::vector<Entry>::iterator begin();
+		std::vector<Entry>::iterator end();
 		std::vector<Entry>::const_iterator begin() const;
-
 		std::vector<Entry>::const_iterator end() const;
 	};
 }
