@@ -12,9 +12,9 @@ namespace utils
 	{
 		std::string mFilepath;
 
-		size_t mWidth, mHeight;
+		size_t mWidth{ 0 }, mHeight{ 0 };
 		
-		uint32_t mBitsPerPixel;
+		uint32_t mBitsPerPixel{ 0 };
 
 		uint8_t* mData{ nullptr };
 
