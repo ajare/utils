@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <exception>
+#include <stdexcept>
 #include <filesystem>
 
 #include "Platform.h"
@@ -17,12 +17,12 @@ namespace utils
 		//
 		// Generic exception class
 		//
-		class FileException : public std::exception
+		class FileException : public std::runtime_error
 		{
 		public:
 
 			explicit FileException(std::string const& message)
-				: exception(message.c_str())
+				: std::runtime_error(message)
 			{
 			}
 		};

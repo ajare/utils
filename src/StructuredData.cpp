@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <stdexcept>
 
 #include "StructuredData.h"
 
@@ -60,7 +61,7 @@ namespace utils
 		if (it == mEntries.end())
 		{
 			string errMsg = "Could not find entry '" + key + "'.";
-			throw exception(errMsg.c_str());
+			throw runtime_error(errMsg);
 		}
 
 		return (*it).second;
@@ -68,7 +69,7 @@ namespace utils
 
 	StructuredData& StructuredData::getEntry(string const& key)
 	{
-		auto it=find_if(mEntries.begin(),mEntries.end(),[&](auto const& entry){return entry.first==key;});if(it==mEntries.end())throw exception(("Could not find entry '"+key+"'.").c_str());return it->second;
+		auto it=find_if(mEntries.begin(),mEntries.end(),[&](auto const& entry){return entry.first==key;});if(it==mEntries.end())throw runtime_error("Could not find entry '"+key+"'.");return it->second;
 	}
 
 	void StructuredData::setEntryValue(string const& key,string const& value)

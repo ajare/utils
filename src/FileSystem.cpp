@@ -200,7 +200,7 @@ namespace utils
 	{
 		ofstream fp;
 			
-		fp.open(filepath.operator std::basic_string_view<char, std::char_traits<char>>(), ios_base::trunc);
+		fp.open(filepath, ios_base::trunc);
 
 		if (!fp.is_open())
 		{

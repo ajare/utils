@@ -1,17 +1,17 @@
 #pragma once
 
 #include <string>
-#include <exception>
+#include <stdexcept>
 
 namespace utils
 {
 		
-	class XmlException : public std::exception
+	class XmlException : public std::runtime_error
 	{
 	public:
 
 		XmlException(std::string const& msg, std::string const& source)
-			: exception(source == "" ? msg.c_str() : std::string(source + ": " + msg).c_str())
+			: std::runtime_error(source.empty() ? msg : source + ": " + msg)
 		{
 		}
 	};
