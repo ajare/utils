@@ -5,6 +5,7 @@
 
 #include "Platform.h"
 #include "StringUtils.h"
+#include "StructuredData.h"
 
 namespace utils
 {
@@ -69,6 +70,11 @@ namespace utils
 		XmlWriteNode* getRootNode();
 
 		void write(std::string const& filepath);
+
+		// Writes a StructuredData tree directly: every entry becomes a child
+		// element (repeats are written as repeated sibling elements, since XML
+		// has no uniqueness constraint on element names), no attributes.
+		static void writeTree(StructuredData const& root, std::string const& filepath);
 	};
 
 } // utils

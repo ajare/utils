@@ -10,6 +10,8 @@ set(UTILS_SOURCES
     src/tinyxml2.cpp
     src/XmlReader.cpp
     src/XmlWriter.cpp
+    src/YamlReader.cpp
+    src/YamlWriter.cpp
 )
 
 set(UTILS_PUBLIC_HEADERS
@@ -22,7 +24,20 @@ set(UTILS_PUBLIC_HEADERS
     include/utils/XmlExceptions.h
     include/utils/XmlReader.h
     include/utils/XmlWriter.h
+    include/utils/YamlExceptions.h
+    include/utils/YamlReader.h
+    include/utils/YamlWriter.h
 )
+
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+set(YAML_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+# Match Utils' own runtime library selection (MSVC defaults to /MD), otherwise
+# linking against the vendored static yaml-cpp fails with LNK2038.
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" CACHE STRING "" FORCE)
+add_subdirectory(vendor/yaml-cpp EXCLUDE_FROM_ALL)
 
 set(UTILS_VENDOR_HEADERS
     vendor/include/stb/stb_image.h
@@ -50,6 +65,8 @@ target_include_directories(Utils
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/include
 )
+
+target_link_libraries(Utils PRIVATE yaml-cpp::yaml-cpp)
 
 set_target_properties(Utils PROPERTIES
     DEBUG_POSTFIX d

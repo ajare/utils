@@ -127,4 +127,28 @@ namespace utils
 		doc->SaveFile(filepath.c_str());
 	}
 
+	namespace
+	{
+		void appendChildren(StructuredData const& node, XmlWriteNode* element)
+		{
+			if (node.isValue())
+			{
+				element->setValue(node.getValue());
+				return;
+			}
+
+			for (auto const& entry : node)
+			{
+				appendChildren(entry.second, element->createChild(entry.first));
+			}
+		}
+	}
+
+	void XmlWriter::writeTree(StructuredData const& root, string const& filepath)
+	{
+		XmlWriter writer(root.getName());
+		appendChildren(root, writer.getRootNode());
+		writer.write(filepath);
+	}
+
 } // utils
