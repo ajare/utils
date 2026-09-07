@@ -57,6 +57,33 @@ set(UTILS_PUBLIC_HEADERS
     include/utils/YamlWriter.h
 )
 
+# Valijson is header-only. Pin the archive and expose it only while compiling
+# Utils so validator implementation types cannot cross the DLL boundary. A
+# parent build may pre-fetch it and pass UTILS_VALIJSON_SOURCE_DIR.
+set(UTILS_VALIJSON_SOURCE_DIR "" CACHE PATH "Pre-fetched Valijson v1.1.2 source directory")
+if(NOT UTILS_VALIJSON_SOURCE_DIR)
+    include(FetchContent)
+    FetchContent_Declare(utils_valijson
+        URL "https://github.com/tristanpenman/valijson/archive/refs/tags/v1.1.2.tar.gz"
+        URL_HASH "SHA256=8e3cb09aead72f6f8653c966669cab52ff921ac52cc9d7498cd9387a35acce93"
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+    FetchContent_GetProperties(utils_valijson)
+    if(NOT utils_valijson_POPULATED)
+        if(POLICY CMP0169)
+            cmake_policy(PUSH)
+            cmake_policy(SET CMP0169 OLD)
+        endif()
+        FetchContent_Populate(utils_valijson)
+        if(POLICY CMP0169)
+            cmake_policy(POP)
+        endif()
+    endif()
+    set(UTILS_VALIJSON_SOURCE_DIR "${utils_valijson_SOURCE_DIR}")
+endif()
+if(NOT EXISTS "${UTILS_VALIJSON_SOURCE_DIR}/include/valijson/schema_parser.hpp")
+    message(FATAL_ERROR "UTILS_VALIJSON_SOURCE_DIR does not contain Valijson v1.1.2")
+endif()
+
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
@@ -93,6 +120,7 @@ target_compile_features(Utils PUBLIC cxx_std_20)
 target_compile_definitions(Utils
     PRIVATE
         UTILS_DLL_EXPORT
+        VALIJSON_USE_EXCEPTIONS=1
         $<$<PLATFORM_ID:Windows>:UNICODE;_UNICODE>
 )
 
@@ -101,6 +129,7 @@ target_include_directories(Utils
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/utils>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/include
+        ${UTILS_VALIJSON_SOURCE_DIR}/include
 )
 
 target_link_libraries(Utils PRIVATE yaml-cpp::yaml-cpp)

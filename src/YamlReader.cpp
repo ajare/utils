@@ -1,7 +1,15 @@
+#include <algorithm>
 #include <fstream>
+#include <memory>
 #include <sstream>
+#include <stdexcept>
 
 #include <yaml-cpp/yaml.h>
+#include <valijson/adapters/yaml_cpp_adapter.hpp>
+#include <valijson/schema.hpp>
+#include <valijson/schema_parser.hpp>
+#include <valijson/validation_results.hpp>
+#include <valijson/validator.hpp>
 
 #include "YamlReader.h"
 #include "YamlExceptions.h"
@@ -13,6 +21,55 @@ namespace utils
 	namespace
 	{
 		StructuredData convertValue(YAML::Node const& value, string const& name, map<string, string> const& wrapperItemNames);
+
+		string unescapeJsonPointerToken(string token)
+		{
+			for (size_t position = 0; (position = token.find('~', position)) != string::npos;)
+			{
+				if (position + 1 < token.size() && token[position + 1] == '0')
+					token.replace(position, 2, "~");
+				else if (position + 1 < token.size() && token[position + 1] == '1')
+					token.replace(position, 2, "/");
+				++position;
+			}
+			return token;
+		}
+
+		YAML::Node nodeAtJsonPointer(YAML::Node const& root, string const& pointer)
+		{
+			YAML::Node node = root;
+			size_t begin = pointer.empty() ? string::npos : 1;
+			while (begin != string::npos && begin <= pointer.size())
+			{
+				auto const end = pointer.find('/', begin);
+				auto const token = unescapeJsonPointerToken(pointer.substr(begin, end - begin));
+				if (node.IsMap())
+				{
+					auto const child = static_cast<YAML::Node const&>(node)[token];
+					if (!child)
+						return {};
+					node.reset(child);
+				}
+				else if (node.IsSequence())
+				{
+					try
+					{
+						auto const child = static_cast<YAML::Node const&>(node)[static_cast<size_t>(stoull(token))];
+						if (!child)
+							return {};
+						node.reset(child);
+					}
+					catch (exception const&)
+					{
+						return {};
+					}
+				}
+				else
+					return {};
+				begin = end == string::npos ? string::npos : end + 1;
+			}
+			return node;
+		}
 
 		void appendChildren(YAML::Node const& mapNode, StructuredData& parent, map<string, string> const& wrapperItemNames)
 		{
@@ -121,6 +178,64 @@ namespace utils
 		}
 
 		return new YamlReader(doc, "", wrapperItemNames);
+	}
+
+	vector<JsonSchemaValidationFailure> YamlReader::validateJsonSchema(
+		string const& rootSchema,
+		vector<JsonSchemaDocument> const& localSchemas,
+		size_t maximumFailures) const
+	{
+		vector<JsonSchemaValidationFailure> failures;
+		if (maximumFailures == 0)
+			return failures;
+
+		try
+		{
+			YAML::Node schemaDocument = YAML::Load(rootSchema);
+			valijson::adapters::YamlCppAdapter schemaAdapter(schemaDocument);
+			valijson::Schema schema;
+			valijson::SchemaParser parser(valijson::SchemaParser::kDraft7);
+
+			auto fetchSchema = [&localSchemas](string const& uri) -> YAML::Node const*
+			{
+				auto const found = find_if(localSchemas.begin(), localSchemas.end(),
+					[&uri](JsonSchemaDocument const& candidate) { return candidate.id == uri; });
+				if (found == localSchemas.end())
+					return nullptr;
+				return new YAML::Node(YAML::Load(found->source));
+			};
+			auto freeSchema = [](YAML::Node const* schemaNode) { delete schemaNode; };
+			parser.populateSchema(schemaAdapter, schema, fetchSchema, freeSchema);
+
+			auto const& document = *static_cast<YAML::Node*>(mDocument);
+			valijson::adapters::YamlCppAdapter documentAdapter(document);
+			valijson::ValidationResults results;
+			// yaml-cpp intentionally exposes scalar conversion rather than a fixed
+			// JSON scalar type. Valijson's YAML adapter therefore uses weak type
+			// checks so native YAML numbers/booleans and compatible quoted forms
+			// retain the parser's conversion semantics.
+			valijson::Validator validator(valijson::Validator::kWeakTypes);
+			validator.validate(schema, documentAdapter, &results);
+
+			for (auto const& error : results)
+			{
+				if (failures.size() == maximumFailures)
+					break;
+				auto const failedNode = nodeAtJsonPointer(document, error.jsonPointer);
+				auto const mark = failedNode ? failedNode.Mark() : YAML::Mark::null_mark();
+				failures.push_back({error.jsonPointer, error.description,
+					mark.is_null() ? 0 : mark.line + 1,
+					mark.is_null() ? 0 : mark.column + 1});
+			}
+		}
+		catch (exception const& error)
+		{
+			// Schema parsing and unresolved-reference errors are represented using
+			// the same library-neutral record rather than leaking Valijson errors.
+			failures.push_back({"", string("Schema error: ") + error.what(), 0, 0});
+		}
+
+		return failures;
 	}
 
 	StructuredData YamlReader::readTree() const

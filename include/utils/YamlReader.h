@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
+#include <cstddef>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "Platform.h"
 
@@ -9,6 +11,22 @@
 
 namespace utils
 {
+
+	// Library-neutral description of one schema document. Catalog keys are
+	// absolute schema IDs; sources contain JSON Schema text held in memory.
+	struct JsonSchemaDocument
+	{
+		std::string id;
+		std::string source;
+	};
+
+	struct JsonSchemaValidationFailure
+	{
+		std::string instancePath;
+		std::string message;
+		int line = 0;
+		int column = 0;
+	};
 
 	// Reads a YAML document into the same StructuredData shape utils::XmlReader
 	// produces from XML: a document with a single root key, whose descendants
@@ -42,6 +60,15 @@ namespace utils
 		static YamlReader* fromFile(std::string const& filepath, std::map<std::string, std::string> const& wrapperItemNames = {});
 
 		static YamlReader* fromString(std::string const& text, std::map<std::string, std::string> const& wrapperItemNames = {});
+
+		// Validates the parser-owned YAML tree directly. External references are
+		// resolved exclusively from localSchemas; no filesystem or network
+		// resolver is installed. The returned records contain no validator or
+		// YAML implementation types.
+		std::vector<JsonSchemaValidationFailure> validateJsonSchema(
+			std::string const& rootSchema,
+			std::vector<JsonSchemaDocument> const& localSchemas = {},
+			std::size_t maximumFailures = 100) const;
 
 		StructuredData readTree() const;
 	};
