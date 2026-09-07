@@ -1,10 +1,14 @@
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <memory>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 
+#include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
+#include <valijson/adapters/nlohmann_json_adapter.hpp>
 #include <valijson/adapters/yaml_cpp_adapter.hpp>
 #include <valijson/schema.hpp>
 #include <valijson/schema_parser.hpp>
@@ -21,6 +25,57 @@ namespace utils
 	namespace
 	{
 		StructuredData convertValue(YAML::Node const& value, string const& name, map<string, string> const& wrapperItemNames);
+
+		nlohmann::json jsonValue(YAML::Node const& value)
+		{
+			if (value.IsNull())
+				return nullptr;
+			if (value.IsSequence())
+			{
+				auto result = nlohmann::json::array();
+				for (auto const& item : value)
+					result.push_back(jsonValue(item));
+				return result;
+			}
+			if (value.IsMap())
+			{
+				auto result = nlohmann::json::object();
+				for (auto const& entry : value)
+					result[entry.first.as<string>()] = jsonValue(entry.second);
+				return result;
+			}
+
+			string const scalar = value.as<string>();
+			string const tag = value.Tag();
+			// yaml-cpp marks quoted/block scalars with the non-specific string tag
+			// ('!'). Plain scalars use '?', so resolve their JSON-compatible native
+			// type while retaining every quoted value as a string.
+			if (tag == "!" || tag == "tag:yaml.org,2002:str")
+				return scalar;
+
+			string lower = scalar;
+			transform(lower.begin(), lower.end(), lower.begin(),
+				[](unsigned char character) { return static_cast<char>(tolower(character)); });
+			if (tag == "tag:yaml.org,2002:bool" || lower == "true" || lower == "false" ||
+				lower == "yes" || lower == "no" || lower == "on" || lower == "off")
+				return lower == "true" || lower == "yes" || lower == "on";
+
+			static regex const integerPattern(R"(^[+-]?[0-9]+$)");
+			static regex const numberPattern(
+				R"(^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$)");
+			try
+			{
+				if (tag == "tag:yaml.org,2002:int" || regex_match(scalar, integerPattern))
+					return stoll(scalar);
+				if (tag == "tag:yaml.org,2002:float" || regex_match(scalar, numberPattern))
+					return stod(scalar);
+			}
+			catch (exception const&)
+			{
+				// Out-of-range numbers stay strings and are rejected by numeric schemas.
+			}
+			return scalar;
+		}
 
 		string unescapeJsonPointerToken(string token)
 		{
@@ -208,13 +263,10 @@ namespace utils
 			parser.populateSchema(schemaAdapter, schema, fetchSchema, freeSchema);
 
 			auto const& document = *static_cast<YAML::Node*>(mDocument);
-			valijson::adapters::YamlCppAdapter documentAdapter(document);
+			auto const typedDocument = jsonValue(document);
+			valijson::adapters::NlohmannJsonAdapter documentAdapter(typedDocument);
 			valijson::ValidationResults results;
-			// yaml-cpp intentionally exposes scalar conversion rather than a fixed
-			// JSON scalar type. Valijson's YAML adapter therefore uses weak type
-			// checks so native YAML numbers/booleans and compatible quoted forms
-			// retain the parser's conversion semantics.
-			valijson::Validator validator(valijson::Validator::kWeakTypes);
+			valijson::Validator validator(valijson::Validator::kStrongTypes);
 			validator.validate(schema, documentAdapter, &results);
 
 			for (auto const& error : results)
@@ -236,6 +288,22 @@ namespace utils
 		}
 
 		return failures;
+	}
+
+	optional<string> YamlReader::scalarAtJsonPointer(string const& pointer) const
+	{
+		auto const& doc = *static_cast<YAML::Node*>(mDocument);
+		auto const node = nodeAtJsonPointer(doc, pointer);
+		if (!node || !node.IsScalar())
+			return nullopt;
+		try
+		{
+			return node.as<string>();
+		}
+		catch (YAML::Exception const&)
+		{
+			return nullopt;
+		}
 	}
 
 	StructuredData YamlReader::readTree() const

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,11 @@ namespace utils
 			std::string const& rootSchema,
 			std::vector<JsonSchemaDocument> const& localSchemas = {},
 			std::size_t maximumFailures = 100) const;
+
+		// Returns a scalar from the parser-owned document without exposing YAML
+		// implementation types. This is intended for adding document-specific
+		// context to validation diagnostics before lossy conversion.
+		std::optional<std::string> scalarAtJsonPointer(std::string const& pointer) const;
 
 		StructuredData readTree() const;
 	};

@@ -84,6 +84,26 @@ if(NOT EXISTS "${UTILS_VALIJSON_SOURCE_DIR}/include/valijson/schema_parser.hpp")
     message(FATAL_ERROR "UTILS_VALIJSON_SOURCE_DIR does not contain Valijson v1.1.2")
 endif()
 
+# Valijson's yaml-cpp adapter treats every YAML scalar as a string. Adapt the
+# parser-owned tree through nlohmann/json so native numbers and booleans remain
+# distinguishable from quoted compatibility strings during strict validation.
+include(FetchContent)
+FetchContent_Declare(utils_nlohmann_json
+    URL "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz"
+    URL_HASH "SHA256=0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406"
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+FetchContent_GetProperties(utils_nlohmann_json)
+if(NOT utils_nlohmann_json_POPULATED)
+    if(POLICY CMP0169)
+        cmake_policy(PUSH)
+        cmake_policy(SET CMP0169 OLD)
+    endif()
+    FetchContent_Populate(utils_nlohmann_json)
+    if(POLICY CMP0169)
+        cmake_policy(POP)
+    endif()
+endif()
+
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
@@ -130,6 +150,7 @@ target_include_directories(Utils
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/include
         ${UTILS_VALIJSON_SOURCE_DIR}/include
+        ${utils_nlohmann_json_SOURCE_DIR}/single_include
 )
 
 target_link_libraries(Utils PRIVATE yaml-cpp::yaml-cpp)
