@@ -29,6 +29,20 @@ namespace utils
 		int column = 0;
 	};
 
+	// Bounded, implementation-neutral facts about a parsed YAML document.
+	// A structural problem denotes a mapping that cannot be represented by the
+	// string-keyed Resource Manifest model (for example, a duplicate key).
+	struct YamlDocumentInspection
+	{
+		std::size_t nodeCount = 0;
+		std::size_t maximumDepth = 0;
+		bool limitExceeded = false;
+		bool structuralProblem = false;
+		std::string message;
+		int line = 0;
+		int column = 0;
+	};
+
 	// Reads a YAML document into the same StructuredData shape utils::XmlReader
 	// produces from XML: a document with a single root key, whose descendants
 	// are either scalars or named children (repeated child names round-trip as
@@ -52,7 +66,8 @@ namespace utils
 
 	private:
 
-		YamlReader(void* doc, std::string const& filepath, std::map<std::string, std::string> const& wrapperItemNames);
+		YamlReader(void* doc, std::string const& filepath,
+			std::map<std::string, std::string> const& wrapperItemNames);
 
 	public:
 
@@ -75,6 +90,15 @@ namespace utils
 		// implementation types. This is intended for adding document-specific
 		// context to validation diagnostics before lossy conversion.
 		std::optional<std::string> scalarAtJsonPointer(std::string const& pointer) const;
+
+		// Traverses without recursion and stops as soon as either defensive limit
+		// is crossed. Mapping keys must be unique scalar strings.
+		YamlDocumentInspection inspect(std::size_t maximumDepth,
+			std::size_t maximumNodeCount) const;
+
+		// Emits deterministic UTF-8 YAML with two-space indentation, block
+		// collections, LF line endings, native scalar types, and one final newline.
+		std::string canonicalYaml() const;
 
 		StructuredData readTree() const;
 	};

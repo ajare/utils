@@ -1,10 +1,15 @@
 #include <algorithm>
+#include <array>
+#include <charconv>
 #include <cctype>
+#include <cmath>
 #include <fstream>
 #include <memory>
 #include <regex>
+#include <set>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 
 #include <nlohmann/json.hpp>
 #include <yaml-cpp/yaml.h>
@@ -75,6 +80,102 @@ namespace utils
 				// Out-of-range numbers stay strings and are rejected by numeric schemas.
 			}
 			return scalar;
+		}
+
+		void emitCanonical(YAML::Emitter& emitter, YAML::Node const& value)
+		{
+			if (value.IsNull())
+			{
+				emitter << YAML::Null;
+				return;
+			}
+			if (value.IsSequence())
+			{
+				emitter << YAML::BeginSeq;
+				for (auto const& item : value)
+					emitCanonical(emitter, item);
+				emitter << YAML::EndSeq;
+				return;
+			}
+			if (value.IsMap())
+			{
+				emitter << YAML::BeginMap;
+				for (auto const& entry : value)
+				{
+					emitter << YAML::Key << entry.first.as<string>() << YAML::Value;
+					emitCanonical(emitter, entry.second);
+				}
+				emitter << YAML::EndMap;
+				return;
+			}
+
+			string const scalar = value.as<string>();
+			string const tag = value.Tag();
+			if (tag == "!" || tag == "tag:yaml.org,2002:str")
+			{
+				emitter << YAML::DoubleQuoted << scalar;
+				return;
+			}
+
+			string lower = scalar;
+			transform(lower.begin(), lower.end(), lower.begin(),
+				[](unsigned char character) { return static_cast<char>(tolower(character)); });
+			if (tag == "tag:yaml.org,2002:bool" || lower == "true" || lower == "false" ||
+				lower == "yes" || lower == "no" || lower == "on" || lower == "off")
+			{
+				emitter << (lower == "true" || lower == "yes" || lower == "on");
+				return;
+			}
+
+			static regex const integerPattern(R"(^[+-]?[0-9]+$)");
+			static regex const numberPattern(
+				R"(^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$)");
+			try
+			{
+				if (tag == "tag:yaml.org,2002:int" || regex_match(scalar, integerPattern))
+				{
+					emitter << stoll(scalar);
+					return;
+				}
+				if (tag == "tag:yaml.org,2002:float" || regex_match(scalar, numberPattern))
+				{
+					string_view numeric = scalar;
+					if (numeric.starts_with('+'))
+						numeric.remove_prefix(1);
+					double number = 0;
+					auto const parsed = from_chars(numeric.data(), numeric.data() + numeric.size(),
+						number, chars_format::general);
+					if (parsed.ec != errc{} || parsed.ptr != numeric.data() + numeric.size() ||
+						!isfinite(number))
+						throw invalid_argument("Non-finite or malformed YAML number");
+
+					array<char, 64> buffer{};
+					auto const formatted = to_chars(buffer.data(), buffer.data() + buffer.size(),
+						number, chars_format::general);
+					if (formatted.ec != errc{})
+						throw runtime_error("Could not format YAML number");
+					string canonicalNumber(buffer.data(), formatted.ptr);
+					if (canonicalNumber.find_first_of(".eE") == string::npos)
+						canonicalNumber += ".0";
+					// Passing the numeric token as an untagged scalar preserves its
+					// floating-point type; passing a double lets yaml-cpp emit 1.0 as 1.
+					emitter << canonicalNumber;
+					return;
+				}
+			}
+			catch (exception const&)
+			{
+				// Out-of-range values retain string semantics and fail numeric schemas.
+			}
+			emitter << YAML::DoubleQuoted << scalar;
+		}
+
+		vector<YAML::Node> loadSingleDocument(string const& text)
+		{
+			auto documents = YAML::LoadAll(text);
+			if (documents.size() != 1)
+				throw YamlException("YAML stream must contain exactly one document.", "");
+			return documents;
 		}
 
 		string unescapeJsonPointerToken(string token)
@@ -191,7 +292,8 @@ namespace utils
 		}
 	}
 
-	YamlReader::YamlReader(void* doc, string const& filepath, map<string, string> const& wrapperItemNames)
+	YamlReader::YamlReader(void* doc, string const& filepath,
+		map<string, string> const& wrapperItemNames)
 		: mDocument(doc)
 		, mFilepath(filepath)
 		, mWrapperItemNames(wrapperItemNames)
@@ -205,34 +307,45 @@ namespace utils
 
 	YamlReader* YamlReader::fromFile(string const& filepath, map<string, string> const& wrapperItemNames)
 	{
-		YAML::Node* doc = nullptr;
-
 		try
 		{
-			doc = new YAML::Node(YAML::LoadFile(filepath));
+			ifstream input(filepath, ios::binary);
+			if (!input)
+				throw YamlException("Could not open YAML file.", filepath);
+			ostringstream contents;
+			contents << input.rdbuf();
+			if (!input && !input.eof())
+				throw YamlException("Could not read YAML file.", filepath);
+			auto documents = loadSingleDocument(contents.str());
+			return new YamlReader(new YAML::Node(std::move(documents.front())), filepath,
+				wrapperItemNames);
+		}
+		catch (YamlException const&)
+		{
+			throw;
 		}
 		catch (YAML::Exception const& ex)
 		{
 			throw YamlException(string("Could not load YAML file: ") + ex.what(), filepath);
 		}
-
-		return new YamlReader(doc, filepath, wrapperItemNames);
 	}
 
 	YamlReader* YamlReader::fromString(string const& text, map<string, string> const& wrapperItemNames)
 	{
-		YAML::Node* doc = nullptr;
-
 		try
 		{
-			doc = new YAML::Node(YAML::Load(text));
+			auto documents = loadSingleDocument(text);
+			return new YamlReader(new YAML::Node(std::move(documents.front())), "",
+				wrapperItemNames);
+		}
+		catch (YamlException const&)
+		{
+			throw;
 		}
 		catch (YAML::Exception const& ex)
 		{
 			throw YamlException(string("Could not parse YAML: ") + ex.what(), "");
 		}
-
-		return new YamlReader(doc, "", wrapperItemNames);
 	}
 
 	vector<JsonSchemaValidationFailure> YamlReader::validateJsonSchema(
@@ -304,6 +417,86 @@ namespace utils
 		{
 			return nullopt;
 		}
+	}
+
+	YamlDocumentInspection YamlReader::inspect(size_t maximumDepth,
+		size_t maximumNodeCount) const
+	{
+		YamlDocumentInspection result;
+		struct PendingNode
+		{
+			YAML::Node node;
+			size_t depth;
+		};
+		vector<PendingNode> pending{{*static_cast<YAML::Node*>(mDocument), 1}};
+
+		while (!pending.empty())
+		{
+			auto current = std::move(pending.back());
+			pending.pop_back();
+			++result.nodeCount;
+			result.maximumDepth = max(result.maximumDepth, current.depth);
+			if (current.depth > maximumDepth || result.nodeCount > maximumNodeCount)
+			{
+				result.limitExceeded = true;
+				auto const mark = current.node.Mark();
+				result.line = mark.is_null() ? 0 : mark.line + 1;
+				result.column = mark.is_null() ? 0 : mark.column + 1;
+				result.message = current.depth > maximumDepth
+					? "YAML nesting depth exceeds the defensive limit of " + to_string(maximumDepth) + "."
+					: "YAML node count exceeds the defensive limit of " + to_string(maximumNodeCount) + ".";
+				return result;
+			}
+
+			if (current.node.IsSequence())
+			{
+				for (auto const& item : current.node)
+					pending.push_back({item, current.depth + 1});
+			}
+			else if (current.node.IsMap())
+			{
+				set<string> keys;
+				for (auto const& entry : current.node)
+				{
+					if (!entry.first.IsScalar())
+					{
+						result.structuralProblem = true;
+						result.message = "YAML mapping keys must be scalar strings.";
+					}
+					else
+					{
+						auto const key = entry.first.as<string>();
+						if (!keys.insert(key).second)
+						{
+							result.structuralProblem = true;
+							result.message = "YAML mapping key '" + key + "' is duplicated.";
+						}
+					}
+					if (result.structuralProblem)
+					{
+						auto const mark = entry.first.Mark();
+						result.line = mark.is_null() ? 0 : mark.line + 1;
+						result.column = mark.is_null() ? 0 : mark.column + 1;
+						return result;
+					}
+					pending.push_back({entry.second, current.depth + 1});
+					pending.push_back({entry.first, current.depth + 1});
+				}
+			}
+		}
+		return result;
+	}
+
+	string YamlReader::canonicalYaml() const
+	{
+		YAML::Emitter emitter;
+		emitter.SetIndent(2);
+		emitter.SetMapFormat(YAML::Block);
+		emitter.SetSeqFormat(YAML::Block);
+		emitCanonical(emitter, *static_cast<YAML::Node*>(mDocument));
+		if (!emitter.good())
+			throw YamlException(string("Could not serialize YAML: ") + emitter.GetLastError(), mFilepath);
+		return string(emitter.c_str()) + '\n';
 	}
 
 	StructuredData YamlReader::readTree() const
